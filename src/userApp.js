@@ -1,3 +1,5 @@
+var http = require("http")
+var dotenv=require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const { validate } = require('uuid');
@@ -49,7 +51,7 @@ const userModel = mongoose.model("users", userSchema);
 app.get('/api/users', async (req, res) => {
     try {
         console.log("get all users");
-        userModel.find({}).then((users) => {
+       await userModel.find({}).then((users) => {
             console.log(users)
             return res.status(200).json(users);;
         }).catch(function (error) {
@@ -78,7 +80,7 @@ app.get('/api/users/:userId', async (req, res) => {
             console.log("invalid user id")
             return res.status(400).json({ "message": "invalid user id" })
         } else {
-            data = await userModel.find({ id: id });
+            data = await userModel.find({ _id: id });
             console.log(data.length, "userData")
             if (data.length < 1) return res.status(404).json("userId doesn't exist")
             else
@@ -179,8 +181,12 @@ app.use(function (req, res) {
     res.status(404).json({ "404 Not found Error": req.url });
 });
 //3, 2, 1, go!
-app.listen(port, () => {
-    console.info(`Listening on port: ${port}`);
-});
+var server = http.createServer(app)
+server.listen(port, function () {
+  console.log("Express server listening on port " + port)
+})
 
-exports.module = { app };
+module.exports = {
+  app: app,
+  server: server
+}
